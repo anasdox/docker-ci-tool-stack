@@ -1,15 +1,8 @@
 version: "2"
 
-networks:
-  sf:
-    driver: bridge
-
 services:
   proxy:
     image: traefik
-    command: --web --docker --docker.domain=sf.lan --logLevel=DEBUG
-    networks:
-      - sf
     ports:
       - "80:80"
       - "8080:8080"
@@ -19,18 +12,9 @@ services:
 
   nexus:
     build: ./nexus
-    networks:
-      - sf
-    labels:
-      - "traefik.backend=nexus"
-      - "traefik.frontend.rule=Host:nexus.sf.lan"
+
   sonar:
     build: ./sonar
-    networks:
-      - sf
-    labels:
-      - "traefik.backend=sonar"
-      - "traefik.frontend.rule=Host:sonar.sf.lan"
     depends_on:
       - sonardb
     environment:
@@ -38,8 +22,6 @@ services:
       - SONARQUBE_JDBC_USERNAME=sonar
       - SONARQUBE_JDBC_PASSWORD=sonar
   sonardb:
-    networks:
-      - sf
     image: postgres
     environment:
       - POSTGRES_USER=sonar
@@ -49,12 +31,6 @@ services:
 
   jenkins:
     build: ./jenkins
-    networks:
-      - sf
-    labels:
-      - "traefik.port=8080"
-      - "traefik.backend=jenkins"
-      - "traefik.frontend.rule=Host:jenkins.sf.lan"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /usr/bin/docker:/usr/bin/docker
@@ -69,12 +45,6 @@ services:
 
   rundeck:
     image: jordan/rundeck
-    networks:
-      - sf
-    labels:
-      - "traefik.port=4440"
-      - "traefik.backend=rundeck"
-      - "traefik.frontend.rule=Host:rundeck.sf.lan"
     volumes:
       - /opt/rundeck/etc/:/etc/rundeck
       - /opt/rundeck/log/:/var/log/rundeck

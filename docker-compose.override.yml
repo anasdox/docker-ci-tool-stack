@@ -1,0 +1,50 @@
+version: "2"
+
+networks:
+  front:
+    driver: bridge
+  back:
+    driver: bridge
+
+services:
+  proxy:
+    networks:
+      - front
+    command: --web --docker --docker.domain=sf.lan --logLevel=DEBUG   
+
+  nexus:
+    networks:
+      - front
+    labels:
+      - "traefik.backend=nexus"
+      - "traefik.frontend.rule=Host:nexus.sf.lan"
+
+  sonar:
+    networks:
+      - front
+      - back
+    labels:
+      - "traefik.backend=sonar"
+      - "traefik.frontend.rule=Host:sonar.sf.lan"
+  sonardb:
+    networks:
+      - back
+    labels:
+      - "traefik.enable=false"
+
+  jenkins:
+    networks:
+      - front
+    labels:
+      - "traefik.port=8080"
+      - "traefik.backend=jenkins"
+      - "traefik.frontend.rule=Host:jenkins.sf.lan"
+
+  rundeck:
+    networks:
+      - front
+
+    labels:
+      - "traefik.port=4440"
+      - "traefik.backend=rundeck"
+      - "traefik.frontend.rule=Host:rundeck.sf.lan"
